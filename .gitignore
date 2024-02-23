@@ -51,7 +51,7 @@ docs/_build/
 
 # More
 /solution/.idea
-/solution/Assignment4_datasets
+/Assignment4_datasets
 /solution/fakes_dataset
 /solution/synthetic_dataset
 /.idea

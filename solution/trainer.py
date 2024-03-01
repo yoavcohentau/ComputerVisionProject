@@ -61,6 +61,8 @@ class Trainer:
 
         for batch_idx, (inputs, targets) in enumerate(train_dataloader):
             """INSERT YOUR CODE HERE."""
+            inputs = inputs.to(device)
+            targets = targets.to(device)
             # zero the gradient
             self.optimizer.zero_grad()
             # compute a forward pass
@@ -72,9 +74,9 @@ class Trainer:
             # step optimizer
             self.optimizer.step()
             # update the average loss and accuracy
-            total_loss += loss.item()
+            total_loss += loss.item() * len(inputs)
             correct_labeled_samples += (pred.argmax(1) == targets).type(torch.float).sum().item()
-            nof_samples += self.batch_size
+            nof_samples += len(inputs)
             avg_loss = total_loss / nof_samples
             accuracy = 100 * correct_labeled_samples / nof_samples
 
@@ -110,17 +112,19 @@ class Trainer:
 
         for batch_idx, (inputs, targets) in enumerate(dataloader):
             """INSERT YOUR CODE HERE."""
+            inputs = inputs.to(device)
+            targets = targets.to(device)
             # compute a forward pass under a torch.no_grad() context manager
             with torch.no_grad():
                 pred = self.model(inputs)
-            # compute the loss w.r.t to the criterion
-            loss = self.criterion(pred, targets)
-            # update the average loss and accuracy
-            total_loss += loss.item()
-            correct_labeled_samples += (pred.argmax(1) == targets).type(torch.float).sum().item()
-            nof_samples += self.batch_size
-            avg_loss = total_loss / nof_samples
-            accuracy = 100 * correct_labeled_samples / nof_samples
+                # compute the loss w.r.t to the criterion
+                loss = self.criterion(pred, targets)
+                # update the average loss and accuracy
+                total_loss += loss.item() * len(inputs)
+                correct_labeled_samples += (pred.argmax(1) == targets).type(torch.float).sum().item()
+                nof_samples += len(inputs)
+                avg_loss = total_loss / nof_samples
+                accuracy = 100 * correct_labeled_samples / nof_samples
 
             if batch_idx % print_every == 0 or batch_idx == len(dataloader) - 1:
                 print(f'Epoch [{self.epoch:03d}] | Loss: {avg_loss:.3f} | '

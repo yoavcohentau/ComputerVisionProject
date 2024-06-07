@@ -42,4 +42,19 @@ def get_xception_based_model() -> nn.Module:
     classification head stated in the exercise.
     """
     """INSERT YOUR CODE HERE, overrun return."""
-    return SimpleNet()
+    # Build a pre-trained Xception backbone
+    pretrained_xception_based_model = build_xception_backbone(pretrained=True)
+
+    # Override the network’s “fc” block with the aforementioned MLP architecture.
+    mlp = nn.Sequential(
+        nn.Linear(2048, 1000),
+        nn.ReLU(),
+        nn.Linear(1000, 256),
+        nn.ReLU(),
+        nn.Linear(256, 64),
+        nn.ReLU(),
+        nn.Linear(64, 2),
+    )
+    pretrained_xception_based_model.fc = mlp
+
+    return pretrained_xception_based_model

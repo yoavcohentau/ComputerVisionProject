@@ -52,7 +52,39 @@ def get_grad_cam_visualization(test_dataset: torch.utils.data.Dataset,
         of batch size 1, it's a tensor of shape (1,)).
     """
     """INSERT YOUR CODE HERE, overrun return."""
-    return np.random.rand(256, 256, 3), torch.randint(0, 2, (1,))
+    # imports
+    from pytorch_grad_cam import GradCAM
+    from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+    from pytorch_grad_cam.utils.image import show_cam_on_image
+
+    # load one random sample from dataset
+    train_dataloader = DataLoader(test_dataset,
+                                  1,
+                                  shuffle=True)
+    (input_image, target) = next(iter(train_dataloader))
+
+    # prepare data to grad-cam computation
+    model = model.to(device)
+    input_image = input_image.to(device)
+    target = target.to(device)
+    target_layer = [model.conv3]
+    cam = GradCAM(model=model, target_layers=target_layer)
+    targets = [ClassifierOutputTarget(target)]
+
+    # find grad-cam
+    grayscale_cam = cam(input_tensor=input_image, targets=targets)
+    grayscale_cam = grayscale_cam[0, :]
+
+    # Transpose the tensor to have dimensions (H, W, C)
+    rgb_image = input_image.squeeze().permute(1, 2, 0)
+    # Normalize values to be in the range [0, 1]
+    rgb_image_max_val = rgb_image.max()
+    rgb_image_min_val = rgb_image.min()
+    rgb_image = (rgb_image - rgb_image_min_val) / (rgb_image_max_val - rgb_image_min_val)
+
+    # plot grad-cam on real rgb image
+    visualization = show_cam_on_image(rgb_image.numpy(), grayscale_cam, use_rgb=True)
+    return visualization, target
 
 
 def main():
